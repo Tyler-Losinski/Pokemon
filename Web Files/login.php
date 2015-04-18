@@ -60,9 +60,9 @@
 		<title>PC Storage System Login</title>
 	</head>
 	<body>
-		<FORM NAME ="form1" METHOD ="POST" ACTION ="login.php">
-			<P>Username: <INPUT TYPE = 'TEXT' Name ='username'  value="<?PHP print $uname;?>" maxlength="20">
-			<P>Password: <INPUT TYPE = 'TEXT' Name ='password'  value="<?PHP print $pword;?>" maxlength="16">
+		<FORM NAME ="form1" METHOD ="POST" ACTION ="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
+			<P>Username: <INPUT TYPE = 'TEXT' Name ='username'  value="<?PHP print $pcUsername;?>" maxlength="20">
+			<P>Password: <INPUT TYPE = 'TEXT' Name ='password'  value="<?PHP print $pcPassword;?>" maxlength="16">
 			<P align = center><INPUT TYPE = "Submit" Name = "Submit1"  VALUE = "Login"></P>
 		</FORM>
 		<P><?PHP print_r($errorMessage);?>

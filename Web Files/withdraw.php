@@ -2,7 +2,7 @@
 	// Start session
 	session_start();
 	if (!(isset($_SESSION['login']) && $_SESSION['login'] != '')) {
-		header ("Location: wat.php");
+		header ("Location: login.php");
 		exit();
 	}
 	

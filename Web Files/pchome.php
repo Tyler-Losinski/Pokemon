@@ -4,7 +4,7 @@
 	
 	// If the session is empty, the user has not logged in properly.  Redirect.
 	if (!(isset($_SESSION['login']) && $_SESSION['login'] != '')) {
-		header ("Location: wat.php");
+		header ("Location: login.php");
 		exit();
 	}
 	
@@ -23,7 +23,8 @@
 		<P>
 			<a href="/~adhart/withdraw.php">Withdraw</a><BR>
 			<a href="/~adhart/deposit.php">Deposit</a><BR>
-			<a href="/~adhart/Move.php">Move</a>
+			<a href="/~adhart/Move.php">Move</a><BR>
+			<a href="/~adhart/logout.php">Log out</a>
 		</P>
 	</body>
 </html>

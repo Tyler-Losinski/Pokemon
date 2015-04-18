@@ -2,7 +2,7 @@
 	// Start session
 	session_start();
 	if (!(isset($_SESSION['login']) && $_SESSION['login'] != '')) {
-		header ("Location: wat.php");
+		header ("Location: login.php");
 		exit();
 	}
 
@@ -170,34 +170,44 @@
 		<script>
 			// Populates the Move drop-down lists based on the Pokemon selected
 			function pokemonSelected(dexNo) {
-				var xmlhttp = new XMLHttpRequest();
-				xmlhttp.onreadystatechange = function() {
-					if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-						document.getElementById("move1").innerHTML = xmlhttp.responseText;
-						document.getElementById("move2").innerHTML = xmlhttp.responseText;
-						document.getElementById("move3").innerHTML = xmlhttp.responseText;
-						document.getElementById("move4").innerHTML = xmlhttp.responseText;
+				if (dexNo != 0) {
+					var xmlhttp = new XMLHttpRequest();
+					xmlhttp.onreadystatechange = function() {
+						if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+							document.getElementById("move1").innerHTML = xmlhttp.responseText;
+							document.getElementById("move2").innerHTML = xmlhttp.responseText;
+							document.getElementById("move3").innerHTML = xmlhttp.responseText;
+							document.getElementById("move4").innerHTML = xmlhttp.responseText;
+						}
 					}
+					xmlhttp.open("GET", "/~adhart/getmoves.php?dexNo=" + dexNo, true);
+					xmlhttp.send();
+					
+					document.getElementById("Form").style.display = "inline";
 				}
-				xmlhttp.open("GET", "/~adhart/getmoves.php?dexNo=" + dexNo, true);
-				xmlhttp.send();
-				
-				document.getElementById("Form").style.display = "inline";
+				else {
+					document.getElementById("Form").style.display = "none";
+				}
 			}
 			
 			// Populates the Box slot drop-down list based on the Box selected.  Only returns OPEN slots.
 			function boxSelected(id)
 			{
-				var xmlhttp = new XMLHttpRequest();
-				xmlhttp.onreadystatechange = function() {
-					if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-						document.getElementById("slotNo").innerHTML = xmlhttp.responseText;
+				if (id != 0) {
+					var xmlhttp = new XMLHttpRequest();
+					xmlhttp.onreadystatechange = function() {
+						if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+							document.getElementById("slotNo").innerHTML = xmlhttp.responseText;
+						}
 					}
+					xmlhttp.open("GET", "/~adhart/getemptyslots.php?boxId=" + id, true);
+					xmlhttp.send();
+					
+					document.getElementById("slotNoPar").style.display = "inline";
 				}
-				xmlhttp.open("GET", "/~adhart/getemptyslots.php?boxId=" + id, true);
-				xmlhttp.send();
-				
-				document.getElementById("slotNoPar").style.display = "inline";
+				else {
+					document.getElementById("slotNoPar").style.display = "none";
+				}
 			}
 		</script>
 	</head>
