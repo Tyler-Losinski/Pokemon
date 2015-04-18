@@ -5,6 +5,8 @@
 		header ("Location: login.php");
 		exit();
 	}
+	
+	$requiredErr = "";
 
 	// If the page receives a submit request
 	if ($_SERVER['REQUEST_METHOD'] == 'POST'){
@@ -19,78 +21,89 @@
 		$nickname = htmlspecialchars($_POST['nickname']);
 		$slotId = htmlspecialchars($_POST['slotNo']);
 		
-		// Connect to server
-		$user_name = 'adhart';
-		$pass_word = 'Aug111995';
-		$conn_string = '(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(Host=db1.chpc.ndsu.nodak.edu)(Port=1521)))(CONNECT_DATA=(SID=cs)))';
-		$conn = oci_connect($user_name, $pass_word, $conn_string);
+		if (!$move2) {$move2 = 'NULL';}
+		if (!$move3) {$move3 = 'NULL';}
+		if (!$move4) {$move4 = 'NULL';}
+		if (!$nickname) {$nickname = 'NULL';}
+		if ($lvl > 100) {$lvl = 100;}
 		
-		// If connection failed, print error
-		if (!conn) {
-			$e = oci_error();
-			print htmlentities($e['message']);
-			print "\n<pre>\n";
-			print htmlentities($e['sqltext']);
-			printf("\n%".($e['offset']+1)."s", "^");
-			print  "\n</pre>\n";
+		if (!$move1 || !$dexNo || !$sex || !$slotId) {
+			$requiredErr = " Field is required";
 		}
 		else {
-			// Get the highest ID currently stored in the table
-			$sql = "SELECT MAX(pId) AS NEXT FROM Pokemon";
-			$stid = oci_parse($conn, $sql);
-			oci_execute($stid);
+			// Connect to server
+			$user_name = 'adhart';
+			$pass_word = 'Aug111995';
+			$conn_string = '(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(Host=db1.chpc.ndsu.nodak.edu)(Port=1521)))(CONNECT_DATA=(SID=cs)))';
+			$conn = oci_connect($user_name, $pass_word, $conn_string);
 			
-			if ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
-				// Increment ID by one, so we know it's available
-				$nextID = $row['NEXT'];
-				$nextID++;
-				
-				// Insert new Pokemon from form data
-				$sql = "INSERT INTO Pokemon VALUES(" . $nextID . ", " . $dexNo . ", '" . $sex . "', " . $lvl . ", " . $_SESSION['uid'] . ", "
-					. $move1 . ", " . $move2 . ", " . $move3 . ", " . $move4 . ", '" . $nickname . "')";
-				$stid = oci_parse($conn, $sql);
-				$r = oci_execute($stid);
-				
-				// If insertion failed, print error
-				if (!$r) {
-					$e = oci_error($stid);
-					print htmlentities($e['message']);
-					print "\n<pre>\n";
-					print htmlentities($e['sqltext']);
-					printf("\n%".($e['offset']+1)."s", "^");
-					print  "\n</pre>\n";
-				}
-				// If insertion succeeds, print success message
-				else {
-					echo 'Pokemon created<BR>';
-				}
-				
-				// Insert newly-created Pokemon into the specified box slot
-				$sql = "UPDATE BoxSlot SET pId=" . $nextID . " WHERE sId=" . $slotId;
-				$stid = oci_parse($conn, $sql);
-				$r = oci_execute($stid);
-				
-				// If insertion failed, print error
-				if (!$r) {
-					$e = oci_error($stid);
-					print htmlentities($e['message']);
-					print "\n<pre>\n";
-					print htmlentities($e['sqltext']);
-					printf("\n%".($e['offset']+1)."s", "^");
-					print  "\n</pre>\n";
-				}
-				// If insertion succeeds, print success message
-				else {
-					echo 'Deposit successful<BR>';
-				}
+			// If connection failed, print error
+			if (!conn) {
+				$e = oci_error();
+				print htmlentities($e['message']);
+				print "\n<pre>\n";
+				print htmlentities($e['sqltext']);
+				printf("\n%".($e['offset']+1)."s", "^");
+				print  "\n</pre>\n";
 			}
-			// If could not get highest ID, print error
 			else {
-				echo "Error getting next value";
+				// Get the highest ID currently stored in the table
+				$sql = "SELECT MAX(pId) AS NEXT FROM Pokemon";
+				$stid = oci_parse($conn, $sql);
+				oci_execute($stid);
+				
+				if ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
+					// Increment ID by one, so we know it's available
+					$nextID = $row['NEXT'];
+					$nextID++;
+					
+					// Insert new Pokemon from form data
+					$sql = "INSERT INTO Pokemon VALUES(" . $nextID . ", " . $dexNo . ", '" . $sex . "', " . $lvl . ", " . $_SESSION['uid'] . ", "
+						. $move1 . ", " . $move2 . ", " . $move3 . ", " . $move4 . ", '" . $nickname . "')";
+					$stid = oci_parse($conn, $sql);
+					$r = oci_execute($stid);
+					
+					// If insertion failed, print error
+					if (!$r) {
+						$e = oci_error($stid);
+						print htmlentities($e['message']);
+						print "\n<pre>\n";
+						print htmlentities($e['sqltext']);
+						printf("\n%".($e['offset']+1)."s", "^");
+						print  "\n</pre>\n";
+					}
+					// If insertion succeeds, print success message
+					else {
+						echo 'Pokemon created<BR>';
+					}
+					
+					// Insert newly-created Pokemon into the specified box slot
+					$sql = "UPDATE BoxSlot SET pId=" . $nextID . " WHERE sId=" . $slotId;
+					$stid = oci_parse($conn, $sql);
+					$r = oci_execute($stid);
+					
+					// If insertion failed, print error
+					if (!$r) {
+						$e = oci_error($stid);
+						print htmlentities($e['message']);
+						print "\n<pre>\n";
+						print htmlentities($e['sqltext']);
+						printf("\n%".($e['offset']+1)."s", "^");
+						print  "\n</pre>\n";
+					}
+					// If insertion succeeds, print success message
+					else {
+						echo 'Deposit successful<BR>';
+					}
+				}
+				// If could not get highest ID, print error
+				else {
+					echo "Error getting next value";
+				}
 			}
+			// Close the connection
+			oci_close($conn);
 		}
-		// Close the connection
-		oci_close($conn);
 	}
 	
 	// Populates the "Select Pokemon" drop-down list
@@ -166,6 +179,7 @@
 	<head>
 		<style>
 			.initiallyHidden { display: none; }
+			.error { color: red; }
 		</style>
 		<script>
 			// Populates the Move drop-down lists based on the Pokemon selected
@@ -213,6 +227,7 @@
 	</head>
 	<body>
 		<P><select name="dexNo" form="depositForm" onchange="pokemonSelected(this.value)"><?php popDropDown(); ?></select>
+		<span class="error">* <?php echo $requiredErr;?></span>
 		
 		<div ID = "Form" CLASS="initiallyHidden">
 			<FORM NAME ="depositForm" ID="depositForm" METHOD ="POST" ACTION ="deposit.php">
@@ -220,13 +235,16 @@
 				
 				<P>
 					Nickname: <INPUT TYPE = 'TEXT' NAME = 'nickname' maxlength='12'><BR>
-					Level: <INPUT TYPE = 'TEXT' Name ='lvl' maxlength="3"><BR>
+					Level: <INPUT TYPE = 'TEXT' Name ='lvl' maxlength="3">
+					<span class="error">* <?php echo $requiredErr;?></span><BR>
 					Gender: <INPUT TYPE = 'RADIO' Name ='sex' value="m" checked> Male <INPUT TYPE = 'RADIO' Name  = 'sex' value = "f"> Female
+					<span class="error">* <?php echo $requiredErr;?></span>
 				</P>
 			</FORM>
 			
 			<P>
-				Move 1: <select form="depositForm" id="move1" name="move1"></select><BR>
+				Move 1: <select form="depositForm" id="move1" name="move1"></select>
+				<span class="error">* <?php echo $requiredErr;?></span><BR>
 				Move 2: <select form="depositForm" id="move2" name="move2"></select><BR>
 				Move 3: <select form="depositForm" id="move3" name="move3"></select><BR>
 				Move 4: <select form="depositForm" id="move4" name="move4"></select>
@@ -234,6 +252,7 @@
 			
 			<P>
 				Box: <select id="boxNo" name="boxNo" form="depositForm" onchange = "boxSelected(this.value)"><?PHP popBoxes(); ?></select> <span id = slotNoPar class = "initiallyHidden">Slot: <select form="depositForm" id="slotNo" name="slotNo"></select></span>
+				<span class="error">* <?php echo $requiredErr;?></span>
 			</P>
 		</div>
 		<P><a href="/~adhart/pchome.php">Back to home</a>

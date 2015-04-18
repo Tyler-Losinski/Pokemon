@@ -23,7 +23,7 @@
 		<P>
 			<a href="/~adhart/withdraw.php">Withdraw</a><BR>
 			<a href="/~adhart/deposit.php">Deposit</a><BR>
-			<a href="/~adhart/Move.php">Move</a><BR>
+			<a href="/~adhart/move.php">Move</a><BR>
 			<a href="/~adhart/logout.php">Log out</a>
 		</P>
 	</body>

@@ -28,65 +28,54 @@
 			print  "\n</pre>\n";
 		}
 		else {
-			// Get the highest ID currently stored in the table
-			$sql = "SELECT MAX(pId) AS NEXT FROM Pokemon";
+			// Get selected Pokemon's ID
+			$sql = "SELECT p.pId from Pokemon p JOIN BoxSlot s ON p.pId = s.pId WHERE s.bId = " . $boxId . " AND s.slotNo = " . $slotNo;
 			$stid = oci_parse($conn, $sql);
 			oci_execute($stid);
 			
 			if ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
-				// Get selected Pokemon's ID
-				$sql = "SELECT p.pId from Pokemon p JOIN BoxSlot s ON p.pId = s.pId WHERE s.bId = " . $boxId . " AND s.slotNo = " . $slotNo;
+				$pId = $row['PID'];
+				
+				$sql = "UPDATE BoxSlot SET pId = NULL WHERE bId = " . $boxId . " AND slotNo = " . $slotNo;
 				$stid = oci_parse($conn, $sql);
-				oci_execute($stid);
-				
-				if ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
-					$pId = $row['PID'];
-					
-					$sql = "UPDATE BoxSlot SET pId = NULL WHERE bId = " . $boxId . " AND slotNo = " . $slotNo;
-					$stid = oci_parse($conn, $sql);
-					$r = oci_execute($stid);
-				
-					// If update failed, print error
-					if (!$r) {
-						$e = oci_error($stid);
-						print htmlentities($e['message']);
-						print "\n<pre>\n";
-						print htmlentities($e['sqltext']);
-						printf("\n%".($e['offset']+1)."s", "^");
-						print  "\n</pre>\n";
-					}
-					// If update succeeds, print success message
-					else {
-						echo 'Removal from box successful.<BR>';
-					}
-					
-					$sql = "DELETE FROM Pokemon WHERE pId = " . $pId;
-					$stid = oci_parse($conn, $sql);
-					$r = oci_execute($stid);
-				
-					// If update failed, print error
-					if (!$r) {
-						$e = oci_error($stid);
-						print htmlentities($e['message']);
-						print "\n<pre>\n";
-						print htmlentities($e['sqltext']);
-						printf("\n%".($e['offset']+1)."s", "^");
-						print  "\n</pre>\n";
-					}
-					// If update succeeds, print success message
-					else {
-						echo 'Pokemon withdrawn.<BR>';
-					}
-					
+				$r = oci_execute($stid);
+			
+				// If update failed, print error
+				if (!$r) {
+					$e = oci_error($stid);
+					print htmlentities($e['message']);
+					print "\n<pre>\n";
+					print htmlentities($e['sqltext']);
+					printf("\n%".($e['offset']+1)."s", "^");
+					print  "\n</pre>\n";
 				}
-				// If failed, print error
+				// If update succeeds, print success message
 				else {
-					echo 'An error occurred: Could not withdraw.<BR>';
+					echo 'Removal from box successful.<BR>';
 				}
+				
+				$sql = "DELETE FROM Pokemon WHERE pId = " . $pId;
+				$stid = oci_parse($conn, $sql);
+				$r = oci_execute($stid);
+			
+				// If update failed, print error
+				if (!$r) {
+					$e = oci_error($stid);
+					print htmlentities($e['message']);
+					print "\n<pre>\n";
+					print htmlentities($e['sqltext']);
+					printf("\n%".($e['offset']+1)."s", "^");
+					print  "\n</pre>\n";
+				}
+				// If update succeeds, print success message
+				else {
+					echo 'Pokemon withdrawn.<BR>';
+				}
+				
 			}
-			// If could not get highest ID, print error
+			// If failed, print error
 			else {
-				echo "Error finding Pokemon to withdraw";
+				echo 'An error occurred: Could not withdraw.<BR>';
 			}
 		}
 		// Close the connection
@@ -181,15 +170,17 @@
 								var si = "slotIcon" + (i + 1);
 								
 								if (dn > 386 && dn <= 413) dn += 3;
-								else if (dn > 413 && dn <=479) dn += 6;
-								else if (dn > 479 && dn <= 487) dn += 11;
-								else if (dn > 487 && dn <= 641) dn += 12;
-								else if (dn == 642) dn += 13;
-								else if (dn > 642 && dn <= 645) dn += 14;
-								else if (dn == 646) dn += 15;
-								else if (dn == 647) dn += 17;
-								else if (dn == 648) dn += 18;
-								else if (dn > 648) dn += 19;
+								else if (dn > 413 && dn <=479) dn += 5;
+								else if (dn > 479 && dn <= 487) dn += 10;
+								else if (dn > 487 && dn <= 492) dn += 11;
+								else if (dn > 492 && dn <= 555) dn += 12;
+								else if (dn > 555 && dn < 641) dn += 13;
+								else if (dn == 642) dn += 14;
+								else if (dn > 642 && dn <= 645) dn += 15;
+								else if (dn == 646) dn += 16;
+								else if (dn == 647) dn += 18;
+								else if (dn == 648) dn += 19;
+								else if (dn > 648) dn += 20;
 								
 								document.getElementById(s).innerHTML = '<INPUT TYPE="RADIO" VALUE="' + (i+1) + '" NAME="slotNo" ONCLICK="enable_submit(this)">';
 								document.getElementById(si).style.top = ((dn/16>>0) * -32) + "px";
@@ -202,16 +193,16 @@
 				xmlhttp.send();
 			}
 			
-			var i = 0;
+			var q = 0;
 
 			function enable_submit(obj) {
 				var sb = document.getElementById("Withdraw");
 				if (obj.checked === true){
-					sb.disabled = false; i++;
+					sb.disabled = false; q++;
 				}
 				else {
-					i--;
-					if (i == 0) {
+					q--;
+					if (q == 0) {
 						sb.disabled = true;
 					}
 				}
