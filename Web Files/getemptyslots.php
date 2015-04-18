@@ -6,7 +6,7 @@
 	$conn = oci_connect($user_name, $pass_word, $conn_string);
 	
 	// Select all Slot IDs and Slot numbers from BoxSlot table that match the given Box ID
-	$sql = "SELECT s.sId, s.slotNo FROM Box b JOIN BoxSlot s ON b.bId = s.bId WHERE b.bId = " . $_GET["boxId"] . "AND s.pId IS NULL";
+	$sql = "SELECT s.sId, s.slotNo FROM Box b JOIN BoxSlot s ON b.bId = s.bId WHERE b.bId = " . $_GET["boxId"] . "AND s.pId IS NULL ORDER BY s.slotNo";
 	$stid = oci_parse($conn, $sql);
 	oci_execute($stid);
 	
