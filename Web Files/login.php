@@ -66,5 +66,6 @@
 			<P align = center><INPUT TYPE = "Submit" Name = "Submit1"  VALUE = "Login"></P>
 		</FORM>
 		<P><?PHP print_r($errorMessage);?>
+		<P>Not a user yet?  <a href="/~adhart/register.php">Register!</a>
 	</body>
 </html>
