@@ -1,0 +1,76 @@
+.icon{
+	position: relative;
+	left: -10px;
+	top: -2px;
+}
+
+.iconDiv {
+	overflow: visible;
+	width: 60px;
+	height: 60px;
+}
+
+.cell {
+	padding: 0;
+	margin: 0;
+}
+
+#boxTable {
+	margin-left:30px;
+	margin-right:30px;
+	border-collapse: collapse;
+}
+
+#boxDiv {
+	float: left;
+	width: 430px;
+	height: 378px;
+	margin: 10px;
+	border: 3px solid black;
+	padding:5px;
+	background-image: url("../image/wallpaper1.png");
+	background-position: 0px -30px;
+}
+
+#boxSelectDiv {
+	position:relative;
+	height: 68px;
+}
+
+#boxName {
+	font-family: Verdana, Geneva, sans-serif;
+	font-weight: 700;
+	color: white;
+	margin: 0;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	font-size: 2rem;
+	transform: translate(-50%, -50%);
+}
+
+#boxNameDiv {
+	position: absolute;
+	top:2px;
+	left: 37px;
+	width: 356px;
+	height: 64px;
+	background-image: url("../image/boxNameBar1.png");
+	display: inline-block;
+}
+
+#lArrow {
+	cursor: pointer;
+	position: relative;
+	top: 2px;
+	left: 15px;
+	z-index: 1;
+}
+
+#rArrow {
+	cursor: pointer;
+	position: relative;
+	top: 2px;
+	left: 346px;
+	z-index: 1;
+}

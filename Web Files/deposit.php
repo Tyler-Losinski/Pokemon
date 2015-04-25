@@ -24,7 +24,6 @@
 		if (!$move2) {$move2 = 'NULL';}
 		if (!$move3) {$move3 = 'NULL';}
 		if (!$move4) {$move4 = 'NULL';}
-		if (!$nickname) {$nickname = 'NULL';}
 		if ($lvl > 100) {$lvl = 100;}
 		
 		if (!$move1 || !$dexNo || !$sex || !$slotId) {
@@ -58,8 +57,15 @@
 					$nextID++;
 					
 					// Insert new Pokemon from form data
-					$sql = "INSERT INTO Pokemon VALUES(" . $nextID . ", " . $dexNo . ", '" . $sex . "', " . $lvl . ", " . $_SESSION['uid'] . ", "
-						. $move1 . ", " . $move2 . ", " . $move3 . ", " . $move4 . ", '" . $nickname . "')";
+					$sql = "";
+					if (!$nickname) {
+						$sql = "INSERT INTO Pokemon VALUES(" . $nextID . ", " . $dexNo . ", '" . $sex . "', " . $lvl . ", " . $_SESSION['uid'] . ", "
+							. $move1 . ", " . $move2 . ", " . $move3 . ", " . $move4 . ", NULL)";
+					}
+					else {
+						$sql = "INSERT INTO Pokemon VALUES(" . $nextID . ", " . $dexNo . ", '" . $sex . "', " . $lvl . ", " . $_SESSION['uid'] . ", "
+							. $move1 . ", " . $move2 . ", " . $move3 . ", " . $move4 . ", '" . $nickname . "')";
+					}
 					$stid = oci_parse($conn, $sql);
 					$r = oci_execute($stid);
 					
