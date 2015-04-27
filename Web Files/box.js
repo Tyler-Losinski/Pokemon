@@ -1,59 +1,83 @@
-var currentBox = 1;
-var box1Id = 0;
+var boxTables = [];
 
-window.onload = function getFirstBox() {
-	var xmlhttp = new XMLHttpRequest();
-	xmlhttp.onreadystatechange = function() {
-		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-			box1Id = parseInt(xmlhttp.responseText);
-			scrollBoxes(0);
+window.onload = function initTables() {
+	var inputs = document.getElementsByTagName("table");
+	for (var i = 0; i < inputs.length; i++) {
+		console.log(inputs[i].id);
+		if (inputs[i].id.indexOf("boxTable_") == 0) {
+			var id = inputs[i].id.substr(9);
+			console.log(id);
+			var xmlhttp = new XMLHttpRequest();
+			xmlhttp.onreadystatechange = function() {
+				if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+					var firstBoxId = parseInt(xmlhttp.responseText);
+					var table = { tableId:id, currentBox:1, box1Id:firstBoxId, currentRow:-1, currentCell:-1 }
+					console.log( JSON.stringify(table) );
+					boxTables.push(table);
+					scrollBoxes(id, 0);
+				}
+			};
+			xmlhttp.open("GET", "/~adhart/getInitBox.php?uid=" + Session.uid, false);
+			xmlhttp.send();
 		}
-	};
-	xmlhttp.open("GET", "/~adhart/getInitBox.php?uid=" + Session.uid, true);
-	xmlhttp.send();
+	}
+	console.log( JSON.stringify(boxTables) );
 }
 
-function scrollBoxes(changeAmt) {
-	currentBox += parseInt(changeAmt);
-	if (currentBox < 1) { currentBox = 20; }
-	if (currentBox > 20) { currentBox = 1; }
-	var newBoxId = (currentBox - 1 + box1Id);
+function getTableById(id) {
+	for (var i = 0; i < boxTables.length; i++) {
+		if (boxTables[i].tableId === id) {
+			return i;
+		}
+	}
+}
+
+function scrollBoxes(tableId, changeAmt) {
+	console.log(tableId);
+	var tableIndex = getTableById(tableId);
+	var table = boxTables[tableIndex];
+	table.currentBox += parseInt(changeAmt);
+	if (table.currentBox < 1) { table.currentBox = 20; }
+	if (table.currentBox > 20) { table.currentBox = 1; }
+	boxTables[tableIndex] = table;
+	var newBoxId = (table.currentBox - 1 + table.box1Id);
 	
 	var xmlhttp = new XMLHttpRequest();
 	xmlhttp.onreadystatechange = function() {
 		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-			document.getElementById("boxTable").innerHTML = xmlhttp.responseText;
-			document.getElementById("boxName").innerHTML = "Box " + currentBox;
+			document.getElementById("boxTable_" + table.tableId).innerHTML = xmlhttp.responseText;
+			document.getElementById("boxName_" + table.tableId).innerHTML = "Box " + table.currentBox;
 		}
 	};
-	xmlhttp.open("GET", "/~adhart/getbox2.php?boxId=" + newBoxId, true);
+	xmlhttp.open("GET", "/~adhart/getbox2.php?tableId=" + table.tableId + "&boxId=" + newBoxId, true);
 	xmlhttp.send();
 }
 
-var currentRow=-1;
-var currentCell=-1;
-
-function selectSlot(row, column, boxId) {
-	if (row != currentRow || currentCell != column) {
-		if (currentRow != -1 && currentCell != -1) {
-			document.getElementById('cell_' + currentRow + ',' + currentCell).style.background = 'inherit';
+function selectSlot(tableId, row, column, boxId, pkmnInfoId) {
+	var tableIndex = getTableById(tableId);
+	var table = boxTables[tableIndex];
+	if (row != table.currentRow || table.currentCell != column) {
+		if (table.currentRow != -1 && table.currentCell != -1) {
+			document.getElementById('cell_' + table.tableId + ',' + table.currentRow + ',' + table.currentCell).style.background = 'inherit';
 		}
-		document.getElementById('cell_' + row + ',' + column).style.background='#AAF';
-		currentRow = row;
-		currentCell = column;
+		document.getElementById('cell_' + table.tableId + ',' + row + ',' + column).style.background='#AAF';
+		table.currentRow = row;
+		table.currentCell = column;
+		boxTables[tableIndex] = table;
 	}
 	else {
-		document.getElementById('cell_' + currentRow + ',' + currentCell).style.background = 'inherit';
-		currentRow = -1;
-		currentCell = -1;
+		document.getElementById('cell_' + table.tableId + ',' + table.currentRow + ',' + table.currentCell).style.background = 'inherit';
+		table.currentRow = -1;
+		table.currentCell = -1;
+		boxTables[tableIndex] = table;
 	}
 	
 	var xmlhttp = new XMLHttpRequest();
 	xmlhttp.onreadystatechange = function() {
 		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-			document.getElementById("pokemonInfo").innerHTML = xmlhttp.responseText;
+			document.getElementById("pokemonInfo_" + table.tableId).innerHTML = xmlhttp.responseText;
 		}
 	};
-	xmlhttp.open("GET", "/~adhart/getpokemon.php?boxId=" + boxId + "&slotNo=" + ((currentRow-1)*6 + currentCell), true);
+	xmlhttp.open("GET", "/~adhart/getpokemon.php?boxId=" + boxId + "&slotNo=" + ((table.currentRow-1)*6 + table.currentCell), true);
 	xmlhttp.send();
 }

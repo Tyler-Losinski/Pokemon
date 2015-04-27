@@ -37,7 +37,7 @@
 		<LINK REL="stylesheet" TYPE="text/css" HREF="css/box.css"></LINK>
 		<LINK REL="stylesheet" TYPE="text/css" HREF="css/pokemonInfo.css"></LINK>
 		<STYLE>
-			#pokemonInfo {
+			.pokemonInfo {
 				float: left;
 				padding: 10px;
 				width: 350px;
@@ -46,22 +46,22 @@
 		<SCRIPT>
 			var Session = { uid: <?PHP echo $_SESSION['uid'] ?> };
 		</SCRIPT>
-		<SCRIPT SRC="javascript/box.js"></SCRIPT>
+		<SCRIPT SRC="javascript/box2.js"></SCRIPT>
 	</HEAD>
 	<BODY>
 		<P><a href="/~adhart/pchome.php">Back to home</a>
-			<DIV ID="boxDiv">
-				<DIV ID="boxSelectDiv">
-					<DIV ID="boxNameDiv">
-						<H2 ID="boxName" ID="boxName"></H2>
+			<DIV CLASS="boxDiv">
+				<DIV CLASS="boxSelectDiv">
+					<DIV CLASS="boxNameDiv">
+						<H2 ID="boxName_withdraw" CLASS="boxName"></H2>
 					</DIV>
-					<IMG ID="lArrow" SRC="image/arrowL.png" ONCLICK="javascript:scrollBoxes(-1)"></IMG>
-					<IMG ID="rArrow" SRC="image/arrowR.png" ONCLICK="javascript:scrollBoxes(1)"></IMG>
+					<IMG ID="lArrow" CLASS="lArrow" SRC="image/arrowL.png" ONCLICK="javascript:scrollBoxes('withdraw', -1)"></IMG>
+					<IMG ID="rArrow" CLASS="rArrow" SRC="image/arrowR.png" ONCLICK="javascript:scrollBoxes('withdraw', 1)"></IMG>
 				</DIV>
-				<TABLE ID="boxTable">
+				<TABLE ID="boxTable_withdraw" CLASS="boxTable">
 					<!-- JavaScript will fill in the table -->
 				</TABLE>
 			</DIV>
-		<DIV ID="pokemonInfo"></DIV>
+		<DIV ID="pokemonInfo_withdraw" CLASS="pokemonInfo"></DIV>
 	</BODY>
 </HTML>

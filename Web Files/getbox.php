@@ -5,49 +5,36 @@
 	$conn_string = '(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(Host=db1.chpc.ndsu.nodak.edu)(Port=1521)))(CONNECT_DATA=(SID=cs)))';
 	$conn = oci_connect($user_name, $pass_word, $conn_string);
 	
+	$boxId = $_GET["boxId"];
+	$tableId = $_GET["tableId"];
+	
 	// Select all Slot IDs and Slot numbers from BoxSlot table that match the given Box ID
-	$sql = "SELECT * FROM Box b JOIN BoxSlot s ON b.bId = s.bId LEFT JOIN Pokemon p ON s.pId = p.pId WHERE b.bId = " . $_GET["boxId"] . " ORDER BY sId";
+	$sql = "SELECT p.dexNo, s.slotNo FROM Box b JOIN BoxSlot s ON b.bId = s.bId LEFT JOIN Pokemon p ON s.pId = p.pId WHERE b.bId = " . $boxId . " ORDER BY sId";
 	$stid = oci_parse($conn, $sql);
 	oci_execute($stid);
 	
-	$arr = array();
-	// For each returned row, spit out drop-down code.  Value = Slot ID, Text = Slot number
-	while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
-		$arr[] = $row;
-		
-		// creating object of SimpleXMLElement
-		
-		
-		// function call to convert array to xml
-		
-
-		
-		//saving generated xml file
-		//$xml_student_info->asXML('file path and name');
+	for ($i = 1; $i <= 5; $i++) {
+		echo '<TR>';
+		for ($j = 1; $j <= 6; $j++) {
+			echo '<TD ';
+			echo 'CLASS="cell" ';
+			$test = "'" . $tableId . "'";
+			echo 'ONCLICK="selectSlot(' . $test . ',' . $i . ',' . $j . ',' . $boxId . ')" ';
+			echo 'ID="cell_' . $tableId . ',' . $i . ',' . $j . '">';
+			$row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS);
+			if ($row['DEXNO']) {
+				//echo '<INPUT TYPE="RADIO" VALUE="' . ($i * $j) . '" NAME="slotNo" ONCLICK="enable_submit(this,' . $_GET["boxId"] . ',' . $row['SLOTNO'] . ')">';
+				echo '<DIV CLASS="iconDiv"><IMG CLASS="icon" SRC="image/pkmnicons/' . $row['DEXNO'] . '"></DIV>';
+			}
+			else {
+				echo '<DIV CLASS="iconDiv"></DIV>';
+			}
+			echo '</TD>';
+		}
+		echo '</TR>';
 	}
-	//$xml = new SimpleXMLElement("<?xml version=\"1.0\"><box></box>");
-	$xml = new SimpleXMLElement("<BOX></BOX>");
-	array_to_xml($arr,$xml);
-	echo $xml->asXML();
-	// Close connection
+	
 	oci_close($conn);
 
 
-	// function defination to convert array to xml
-	function array_to_xml($student_info, &$xml_student_info) {
-		foreach($student_info as $key => $value) {
-			if(is_array($value)) {
-				if(!is_numeric($key)){
-					$subnode = $xml_student_info->addChild("$key");
-					array_to_xml($value, $subnode);
-				}
-				else{
-					$subnode = $xml_student_info->addChild("item$key");
-					array_to_xml($value, $subnode);
-				}
-			}
-			else {
-				$xml_student_info->addChild("$key",htmlspecialchars("$value"));
-			}
-		}
-	}
+	
