@@ -14,5 +14,10 @@
 	<body>
 		<P>You have successfully logged out.
 		<P>Click <a href="/~adhart/login.php">here</a> to log back in.
+		<audio id="logout" src="sound/pcOff.wav" preload="auto" style="display=none">
+		<SCRIPT>
+			if (document.referrer == "http://students.cs.ndsu.nodak.edu/~adhart/pchome.php")
+				document.getElementById("logout").play();
+		</SCRIPT>
 	</body>
 </html>

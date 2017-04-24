@@ -26,5 +26,10 @@
 			<a href="/~adhart/move.php">Move</a><BR>
 			<a href="/~adhart/logout.php">Log out</a>
 		</P>
+		<audio id="login" src="sound/pcOn.wav" preload="auto" style="display=none">
+		<SCRIPT>
+			if (document.referrer == "http://students.cs.ndsu.nodak.edu/~adhart/login.php" || document.referrer == "http://students.cs.ndsu.nodak.edu/~adhart/register.php")
+				document.getElementById("login").play();
+		</SCRIPT>
 	</body>
 </html>

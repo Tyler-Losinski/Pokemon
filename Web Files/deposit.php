@@ -232,6 +232,7 @@
 		</script>
 	</head>
 	<body>
+		<H4>NOTE: Gen 6 Pok&eacute;mon (#650 - #721) are currently <em>unsupported</em></H4>
 		<P><select name="dexNo" form="depositForm" onchange="pokemonSelected(this.value)"><?php popDropDown(); ?></select>
 		<span class="error">* <?php echo $requiredErr;?></span>
 		
@@ -262,5 +263,10 @@
 			</P>
 		</div>
 		<P><a href="/~adhart/pchome.php">Back to home</a>
+		<audio id="logon" src="sound/pcLogin.wav" preload="auto" style="display=none">
+		<SCRIPT>
+			if (document.referrer == "http://students.cs.ndsu.nodak.edu/~adhart/pchome.php")
+				document.getElementById("logon").play();
+		</SCRIPT>
 	</body>
 </html>

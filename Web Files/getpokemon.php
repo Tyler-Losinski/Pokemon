@@ -1,92 +1,86 @@
 <?PHP
-	// Connect to database
-    $user_name = 'adhart';
-	$pass_word = 'Aug111995';
-	$conn_string = '(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(Host=db1.chpc.ndsu.nodak.edu)(Port=1521)))(CONNECT_DATA=(SID=cs)))';
-	$conn = oci_connect($user_name, $pass_word, $conn_string);
+	require("helper.php");
+	sessionCheck();
 	
-	// Get selected Pokemon's ID
-	$sql = "SELECT p.pId from Pokemon p JOIN BoxSlot s ON p.pId = s.pId WHERE s.bId = " . $_GET['boxId'] . " AND s.slotNo = " . $_GET['slotNo'];
-	$stid = oci_parse($conn, $sql);
-	oci_execute($stid);
+	if ($_SERVER['REQUEST_METHOD'] == 'POST'){
+		$uId = $_SESSION['uid'];
+		$pId = $_POST['pId'];
+		
+		$conn = getConn();
+		if (!conn) { printOciError(); }
+		else {
+			// Validate that the currently logged-in user has the specified Pokemon in his or her box
+			$validateSql = "SELECT u.userId FROM PCUsers u 
+							JOIN Box b ON b.owner = u.userId
+							JOIN BoxSlot s ON b.bId = s.bId
+							JOIN Pokemon p ON p.pId = s.pId
+							WHERE p.pId = :pId";
+			$validateStid = oci_parse($conn, $validateSql);
+			oci_bind_by_name($validateStid, ":pId", $pId);
+			oci_execute($validateStid);
 	
-	if ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
-		$pId = $row['PID'];
+			if ($row = oci_fetch_array($validateStid, OCI_ASSOC+OCI_RETURN_NULLS)) {
+				if ($row['USERID'] != $uId) {
+					echo "You do not have permission to modify this object";
+				}
+				else {
+					$sql = "SELECT p.pId AS PokemonID,
+								   p.nickname AS Nickname,
+								   p.dexNo AS DexNumber,
+								   ps.name AS SpeciesName,
+								   t1.typeName AS Type1,
+								   ps.type1 AS Type1ID,
+								   t2.typeName AS Type2,
+								   ps.type2 AS Type2ID,
+								   p.gender AS Gender,
+								   p.lvl AS Lvl,
+								   u.username AS OriginalTrainer,
+								   u.userId AS OriginalTrainerID,
+								   a1.name AS Attack1,
+								   p.attack1 AS Attack1ID,
+								   a2.name AS Attack2,
+								   p.attack2 AS Attack2ID,
+								   a3.name AS Attack3,
+								   p.attack3 AS Attack3ID,
+								   a4.name AS Attack4,
+								   p.attack4 AS Attack4ID,
+								   b.bId AS BoxID,
+								   b.boxNo AS BoxNumber,
+								   s.sId AS SlotID,
+								   s.slotNo AS SlotNumber
+							FROM Pokemon p
+							JOIN PCUsers u ON p.ot = u.userId
+							JOIN BoxSlot s ON p.pId = s.pId
+							JOIN Box b ON b.bId = s.bId
+							JOIN PkmnSpecies ps ON p.dexNo = ps.dexNo
+							JOIN PkmnType t1 ON ps.type1 = t1.typeId
 
-		// Select all Slot IDs and Slot numbers from BoxSlot table that match the given Box ID
-		$sql = "SELECT * FROM Pokemon p JOIN PkmnSpecies s ON p.dexNo = s.dexNo WHERE p.pId = " . $pId;
-		$stid = oci_parse($conn, $sql);
-		oci_execute($stid);
-		$row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS);
+							FULL JOIN PkmnType t2 ON ps.type2 = t2.typeId
 
-		$sql2 = "SELECT username FROM PCUsers WHERE userId = " . $row['OT'];
-		$stid2 = oci_parse($conn, $sql2);
-		oci_execute($stid2);
-		$row2 = oci_fetch_array($stid2, OCI_ASSOC+OCI_RETURN_NULLS);
+							JOIN Attack a1 ON p.attack1 = a1.aId
 
-		echo '<DIV ID="pkmnImageDiv"><IMG ID="pkmnImage" SRC="image/pkmnsprites/' . strtolower($row['NAME']) . '.gif"></DIV>';
-		if ($row['NICKNAME']) { echo 'Name: ' . $row['NICKNAME'] . '<BR>'; }
-		else { echo 'Name: ' . $row['NAME'] . '<BR>'; }
-		echo 'Dex NO. ' . $row['DEXNO']. '<span style="padding-left:2em">' . $row['NAME'] . '</span><BR>';
-		if ($row['TYPE2']) { echo 'Type: <IMG SRC="image/typeicons/' . $row['TYPE1'] . '.png"><IMG SRC="image/typeicons/' . $row['TYPE2'] . '.png"><BR>'; }
-		else { echo 'Type: <IMG SRC="image/typeicons/' . $row['TYPE1'] . '.png"><BR>'; }
-		echo 'Gender: ' . $row['G'] . '<BR>';
-		echo 'Level: ' . $row['LVL'] . '<BR>';
-		echo 'OT: ' . $row2['USERNAME'] . '<BR><BR>';
+							FULL JOIN Attack a2 ON p.attack2 = a2.aId
+							FULL JOIN Attack a3 ON p.attack3 = a3.aId
 
-		$sqlAtk = "SELECT name FROM Attack WHERE aId = " . $row['ATTACK1'];
-		$stidAtk = oci_parse($conn, $sqlAtk);
-		oci_execute($stidAtk);
-		$rowAtk = oci_fetch_array($stidAtk, OCI_ASSOC+OCI_RETURN_NULLS);
-
-		echo 'Moves Learned: <BR>';
-		echo '  - ' . $rowAtk['NAME'] . '<BR>';
-
-		if ($row['ATTACK2']) {
-			$sqlAtk = "SELECT name FROM Attack WHERE aId = " . $row['ATTACK2'];
-			$stidAtk = oci_parse($conn, $sqlAtk);
-			oci_execute($stidAtk);
-			$rowAtk = oci_fetch_array($stidAtk, OCI_ASSOC+OCI_RETURN_NULLS);
+							FULL JOIN Attack a4 ON p.attack4 = a4.aId
+							WHERE p.pId = :pId";
+					$stid = oci_parse($conn, $sql);
+					oci_bind_by_name($stid, ":pId", $pId);
+					oci_execute($stid);
 			
-			echo '  - ' . $rowAtk['NAME'] . '<BR>';
+					if ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
+						$xml = new SimpleXMLElement("<Pokemon></Pokemon>");
+						array_to_xml($row,$xml);
+						echo $xml->asXML();
+					}
+					else {
+						printQueryError($stid);
+					}
+				}
+			}
+			else {
+				printQueryError($validateStid);
+			}
 		}
-		else {
-			echo '<BR>';
-		}
-
-		if ($row['ATTACK3']) {
-			$sqlAtk = "SELECT name FROM Attack WHERE aId = " . $row['ATTACK3'];
-			$stidAtk = oci_parse($conn, $sqlAtk);
-			oci_execute($stidAtk);
-			$rowAtk = oci_fetch_array($stidAtk, OCI_ASSOC+OCI_RETURN_NULLS);
-			
-			echo '  - ' . $rowAtk['NAME'] . '<BR>';
-		}
-		else {
-			echo '<BR>';
-		}
-		if ($row['ATTACK4']) {
-			$sqlAtk = "SELECT name FROM Attack WHERE aId = " . $row['ATTACK4'];
-			$stidAtk = oci_parse($conn, $sqlAtk);
-			oci_execute($stidAtk);
-			$rowAtk = oci_fetch_array($stidAtk, OCI_ASSOC+OCI_RETURN_NULLS);
-			
-			echo '  - ' . $rowAtk['NAME'] . '<BR>';
-		}
-		else {
-			echo '<BR>';
-		}
-		echo '<DIV><FORM METHOD="POST" ACTION="withdraw.php"'
-			. '<P><INPUT TYPE="SUBMIT" NAME="withdraw" VALUE="Withdraw"></P>'
-			. '<INPUT TYPE="hidden" NAME="pId" VALUE="' . $row['PID'] . '">'
-			. '<INPUT TYPE="hidden" NAME="boxId" VALUE="' . $_GET['boxId'] . '" />'
-			. '<INPUT TYPE="hidden" NAME="slotNo" VALUE="' . $_GET['slotNo'] . '" /></FORM>';
+		oci_close($conn);
 	}
-	else {
-		echo '';
-	}
-	
-	oci_close($conn);
-
-
-	

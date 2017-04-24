@@ -32,3 +32,32 @@
 		$conn = oci_connect($user_name, $pass_word, $conn_string);
 		return $conn;
 	}
+	
+	function array_to_xml($object_info, $xml_object_info) {
+		foreach($object_info as $key => $value) {
+			$lcKey = strtolower($key);
+			if(is_array($value)) {
+				if(!is_numeric($lcKey)){
+					$subnode = $xml_object_info->addChild("$lcKey");
+					array_to_xml($value, $subnode);
+				}
+				else{
+					$subnode = $xml_object_info->addChild("item$lcKey");
+					array_to_xml($value, $subnode);
+				}
+			}
+			else {
+				$xml_object_info->addChild("$lcKey",htmlspecialchars("$value"));
+			}
+		}
+	}
+	
+	function xml_adopt($root, $new) {
+		$node = $root->addChild($new->getName(), (string) $new);
+		foreach($new->attributes() as $attr => $value) {
+			$node->addAttribute($attr, $value);
+		}
+		foreach($new->children() as $ch) {
+			xml_adopt($node, $ch);
+		}
+	}

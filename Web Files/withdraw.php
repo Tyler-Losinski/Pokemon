@@ -2,66 +2,86 @@
 	require("helper.php");
 	sessionCheck();
 	
-	if ($_SERVER['REQUEST_METHOD'] == 'POST'){
-		$pId = htmlspecialchars($_POST['pId']);
-		$boxId = htmlspecialchars($_POST['boxId']);
-		$slotNo = htmlspecialchars($_POST['slotNo']);
-		
-		$conn = getConn();
-		if (!conn) { printOciError(); }
+	$box1Id;
+	
+	$conn = getConn();
+	if (!conn) { printOciError(); }
+	else {
+		$sql = "SELECT bid FROM box WHERE owner = :PCuserId ORDER BY boxNo";
+		$stid = oci_parse($conn, $sql);
+		oci_bind_by_name($stid, ":PCuserId", $_SESSION['uid']);
+		$r = oci_execute($stid);
+	
+		if (!$r) { printQueryError($stid); }
 		else {
-			$sql = "UPDATE BoxSlot SET pId = NULL WHERE bId = " . $boxId . " AND slotNo = " . $slotNo;
-			$stid = oci_parse($conn, $sql);
-			$r = oci_execute($stid);
-		
-			if (!$r) { printQueryError($stid); }
-			else { echo 'Removal from box successful.<BR>';	}
-			
-			$sql = "DELETE FROM Pokemon WHERE pId = " . $pId;
-			$stid = oci_parse($conn, $sql);
-			$r = oci_execute($stid);
-		
-			if (!$r) { printQueryError($stid); }
-			else { echo 'Pokemon withdrawn.<BR>'; }
+			$row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS);
+			$box1Id = $row['BID'];
 		}
-		oci_close($conn);
 	}
+	oci_close($conn);
 ?>
-
 <!DOCTYPE html>
 <HTML>
 	<HEAD>
 		<META CONTENT="text/html;charset=utf-8" HTTP-EQUIV="Content-Type">
 		<META CONTENT="utf-8" HTTP-EQUIV="encoding">
 		<TITLE>PC Storage System Withdraw</TITLE>
-		<LINK REL="stylesheet" TYPE="text/css" HREF="css/box.css"></LINK>
-		<LINK REL="stylesheet" TYPE="text/css" HREF="css/pokemonInfo.css"></LINK>
-		<STYLE>
-			.pokemonInfo {
-				float: left;
-				padding: 10px;
-				width: 350px;
-			}
-		</STYLE>
+		<LINK REL="stylesheet" TYPE="text/css" HREF="css/boxInterface.css"></LINK>
+		<SCRIPT>var Session = { uid: <?PHP echo $_SESSION['uid']; ?> };  var firstBoxId = <?PHP echo $box1Id; ?></SCRIPT>
+		<SCRIPT SRC="javascript/jquery-1.11.2.min.js"></SCRIPT>
+		<SCRIPT SRC="javascript/boxInterface.js"></SCRIPT>
 		<SCRIPT>
-			var Session = { uid: <?PHP echo $_SESSION['uid'] ?> };
+			function setCellClickHander() {
+				$('td').click(function() {
+					if ($selectedCell === null || selectedBoxNo != currentBoxNo || !$selectedCell.contentsEqual($(this))) {
+						if ($selectedCell !== null) {
+							$selectedCell.css({"background":"inherit"});
+						}
+						$(this).css({"background":"#AAF"});
+						var col = $(this).parent().children().index($(this));
+						var row = $(this).parent().parent().children().index($(this).parent());
+						selectedPokemon = getPokemonFromCell(row, col);
+						$selectedCell = $(this);
+						selectedBoxNo = currentBoxNo;
+						showPokemon(selectedPokemon);
+					}
+					else {
+						$(this).css({"background":"inherit"});
+						$selectedCell = null;
+						showPokemon(null);
+					}
+				});
+			}
+			function onWithdraw() {
+				if (selectedPokemon !== null) {
+					$.ajax({
+						url: "/~adhart/withdrawPokemon.php",
+						data: { slotId: selectedPokemon.slotId, pId: selectedPokemon.pId, pName: selectedPokemon.nickname },
+						type: "POST",
+						success: function (successMessage) {
+							$("#successMessage").html(successMessage);
+							selectedPokemon = null;
+							showPokemon(null);
+							getBox(currentBoxNo - 1 + firstBoxId);
+						},
+						error: function( xhr, status, errorThrown ) {
+							alert( "Sorry, there was a problem!" );
+							console.log( "Error: " + errorThrown );
+							console.log( "Status: " + status );
+							console.dir( xhr );
+						}
+					});
+				}
+				else {
+					$("#successMessage").html("");
+				}
+			}
 		</SCRIPT>
-		<SCRIPT SRC="javascript/box2.js"></SCRIPT>
 	</HEAD>
 	<BODY>
 		<P><a href="/~adhart/pchome.php">Back to home</a>
-			<DIV CLASS="boxDiv">
-				<DIV CLASS="boxSelectDiv">
-					<DIV CLASS="boxNameDiv">
-						<H2 ID="boxName_withdraw" CLASS="boxName"></H2>
-					</DIV>
-					<IMG ID="lArrow" CLASS="lArrow" SRC="image/arrowL.png" ONCLICK="javascript:scrollBoxes('withdraw', -1)"></IMG>
-					<IMG ID="rArrow" CLASS="rArrow" SRC="image/arrowR.png" ONCLICK="javascript:scrollBoxes('withdraw', 1)"></IMG>
-				</DIV>
-				<TABLE ID="boxTable_withdraw" CLASS="boxTable">
-					<!-- JavaScript will fill in the table -->
-				</TABLE>
-			</DIV>
-		<DIV ID="pokemonInfo_withdraw" CLASS="pokemonInfo"></DIV>
+		<DIV ID="boxInterface"></DIV>
+		<BUTTON ID="withdraw" ONCLICK="onWithdraw()">Withdraw</BUTTON>
+		<P ID="successMessage">
 	</BODY>
 </HTML>
